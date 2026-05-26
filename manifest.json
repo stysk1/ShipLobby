@@ -1,8 +1,8 @@
 {
   "name": "ShipLobby",
-  "version_number": "1.0.2",
-  "website_url": "https://github.com/tinyhoot/ShipLobby",
-  "description": "Let people join late whenever you're in orbit in between missions.",
+  "version_number": "2.0.0",
+  "website_url": "https://github.com/stysk1/ShipLobby",
+  "description": "Reopen the lobby between missions to allow players to join mid-session.",
   "dependencies": [
     "BepInEx-BepInExPack-5.4.2100"
   ]
