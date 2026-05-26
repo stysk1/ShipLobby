@@ -1,3 +1,8 @@
+## v2.0.0
+
+- Modernized build to target game v81 (81.0.5-ngd.0) with SDK-style project and GitHub Actions CI/CD.
+- Added `AllowMidGameJoin` config option (default: false) to keep the lobby open during missions.
+
 ## v1.0.2
 
 - Fixes the ship lever getting stuck if someone joins before the post-mission

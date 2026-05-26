@@ -3,7 +3,7 @@
 .SYNOPSIS
     Build the mod and deploy it to an r2modman profile for local testing.
 .DESCRIPTION
-    Copies the DLL to BepInEx\plugins\tinyhoot-ShipLobby\ and upserts the mod entry in
+    Copies the DLL to BepInEx\plugins\stysk1-ShipLobby\ and upserts the mod entry in
     mods.yml so r2modman recognises the mod.
 .EXAMPLE
     ./deploy.ps1
@@ -27,7 +27,7 @@ $r2Base = "$env:APPDATA\r2modmanPlus-local\LethalCompany\profiles"
 if (-not $ProfileRoot) { $ProfileRoot = Join-Path $r2Base $Profile }
 if (-not (Test-Path $ProfileRoot)) { throw "Profile folder not found: $ProfileRoot" }
 
-$pluginDir = Join-Path $ProfileRoot "BepInEx\plugins\tinyhoot-ShipLobby"
+$pluginDir = Join-Path $ProfileRoot "BepInEx\plugins\stysk1-ShipLobby"
 $modsYmlPath = Join-Path $ProfileRoot "mods.yml"
 
 # Read manifest for metadata
@@ -49,28 +49,44 @@ Copy-Item -Path "ShipLobby/bin/$($manifest.name).dll" -Destination $pluginDir -F
 Write-Host "Deployed $($manifest.name).dll -> $pluginDir" -ForegroundColor Green
 
 # Update mods.yml: upsert entry, keeping file format intact
-$modsYmlContent = if (Test-Path $modsYmlPath) { Get-Content $modsYmlPath -Raw } else { "" }
-
 $versionParts = $manifest.version_number -split '\.'
+
+# Build dependency list lines from manifest.json
+$depLines = ($manifest.dependencies | ForEach-Object { "    - $_" }) -join "`n"
+
+$installedAt = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+
 $yamlBlock = @"
 - manifestVersion: 1
-  name: tinyhoot-ShipLobby
+  name: stysk1-ShipLobby
+  authorName: stysk1
+  websiteUrl: $($manifest.website_url)
+  displayName: ShipLobby
+  description: $($manifest.description)
+  gameVersion: '0'
+  networkMode: both
+  packageType: other
+  installMode: managed
+  installedAtTime: $installedAt
+  loaders: []
+  dependencies:
+$depLines
+  incompatibilities: []
+  optionalDependencies: []
   versionNumber:
-    Major: $($versionParts[0])
-    Minor: $($versionParts[1])
-    Patch: $($versionParts[2])
-  dependencies: []
+    major: $($versionParts[0])
+    minor: $($versionParts[1])
+    patch: $($versionParts[2])
+  enabled: true
 "@
 
-# Split and rebuild: remove old entry, prepend new one
-$pattern = "(?m)(?=^- manifestVersion:.*?^(?=- |$))"
-$newContent = if ($modsYmlContent -match "tinyhoot-ShipLobby") {
-    $modsYmlContent -replace "(?ms)^- manifestVersion:.*?(?=^- |$)", ""
+if (-not (Test-Path $modsYmlPath) -or ((Get-Content $modsYmlPath -Raw).Trim() -match '^\[?\]?$')) {
+    [System.IO.File]::WriteAllText($modsYmlPath, $yamlBlock, [System.Text.Encoding]::UTF8)
 } else {
-    $modsYmlContent
+    $existing = [System.IO.File]::ReadAllText($modsYmlPath)
+    $blocks   = ($existing -split '(?m)(?=^- manifestVersion:)') |
+                Where-Object { $_.Trim() -ne '' -and $_ -notmatch '  name: (?:tinyhoot|stysk1)-ShipLobby\b' } |
+                ForEach-Object { $_.TrimEnd() + "`n" }
+    [System.IO.File]::WriteAllText($modsYmlPath, (($blocks + $yamlBlock) -join '').TrimStart(), [System.Text.Encoding]::UTF8)
 }
-
-$newContent = $yamlBlock + "`n" + $newContent
-
-[System.IO.File]::WriteAllText($modsYmlPath, $newContent, [System.Text.Encoding]::UTF8)
 Write-Host "Updated mods.yml  -> $modsYmlPath" -ForegroundColor Green
