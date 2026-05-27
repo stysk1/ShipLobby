@@ -1,6 +1,6 @@
 {
   "name": "ShipLobby",
-  "version_number": "2.0.0",
+  "version_number": "2.0.1",
   "website_url": "https://github.com/stysk1/ShipLobby",
   "description": "Reopen the lobby between missions to allow players to join mid-session.",
   "dependencies": [

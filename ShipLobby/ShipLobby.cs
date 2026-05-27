@@ -8,9 +8,9 @@ namespace ShipLobby
     [BepInPlugin(GUID, NAME, VERSION)]
     internal class ShipLobby : BaseUnityPlugin
     {
-        public const string GUID = "com.github.tinyhoot.ShipLobby";
+        public const string GUID = "stysk1.ShipLobby";
         public const string NAME = "ShipLobby";
-        public const string VERSION = "1.0.2";
+        public const string VERSION = "2.0.1";
         
         internal static ManualLogSource Log;
 
